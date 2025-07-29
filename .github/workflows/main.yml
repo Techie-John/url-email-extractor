@@ -1,0 +1,31 @@
+name: URL/Email Extractor Service
+
+on:
+  schedule:
+    - cron: '*/10 * * * *' # Run every 10 minutes (adjust as needed)
+  workflow_dispatch: # Allows manual triggering for testing
+
+jobs:
+  run-extractor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9' # Or higher, e.g., '3.10', '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run extractor script
+        run: python main.py
+        env:
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+          IMAP_SERVER: ${{ secrets.IMAP_SERVER }}
+          IMAP_PORT: ${{ secrets.IMAP_PORT }}
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
