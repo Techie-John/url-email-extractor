@@ -179,4 +179,4 @@ def process_emails():
                 # Prepare the response email body
                 response_parts = []
                 response_parts.append("Hello from your Extractor Bot!")
-                response_parts.append("\nHere are the extracted items
+                response_parts.append("\nHere are the extracted items")
