@@ -179,4 +179,47 @@ def process_emails():
                 # Prepare the response email body
                 response_parts = []
                 response_parts.append("Hello from your Extractor Bot!")
-                response_parts.append("\nHere are the extracted items")
+                response_parts.append("\nHere are the extracted items from your text:\n")
+
+                if extracted_urls:
+                    response_parts.append("\n--- Found URLs ---")
+                    response_parts.extend([f"- {url}" for url in extracted_urls])
+                    response_parts.append("\n") # Add a blank line for separation
+
+                if extracted_emails:
+                    response_parts.append("\n--- Found Email Addresses ---")
+                    response_parts.extend([f"- {email}" for email in extracted_emails])
+                    response_parts.append("\n") # Add a blank line for separation
+
+                if not extracted_urls and not extracted_emails:
+                    response_parts.append("\nNo URLs or email addresses were found in your text.")
+                    response_parts.append("\nTips: Ensure URLs start with http:// or https:// (or www.) and email addresses are in standard format like user@domain.com.")
+
+                # IMPORTANT: Replace 'YourExtractor.your-subdomain.com' with your actual subdomain/service name
+                response_body = "\n".join(response_parts) + f"\n\n---\nPowered by YourExtractor.your-subdomain.com"
+                send_email(sender_email, "Your Extracted URLs & Emails", response_body)
+                imap_server.add_flags(uid, '\\Seen') # Mark email as read after successful processing
+                print(f"UID {uid}: Email marked as seen and response sent (hopefully).") # DEBUG PRINT 5
+            else:
+                # If no text was found in the email
+                send_email(sender_email, "Error: No Text Provided", "Please send an email with the text you want to process in the body or subject. I couldn't find any text to extract from.")
+                imap_server.add_flags(uid, '\\Seen') # Mark even error emails as read to avoid reprocessing
+                print(f"UID {uid}: No text found, error email sent and marked as seen.") # DEBUG PRINT 6
+
+    except imapclient.exceptions.LoginError as e:
+        print(f"IMAP Login Failed: {e}. Check your EMAIL_USER and EMAIL_PASS (App Password if using Gmail 2FA).")
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"SMTP Login Failed: {e}. Check your EMAIL_USER and EMAIL_PASS (App Password if using Gmail 2FA).")
+    except Exception as e:
+        print(f"An unexpected error occurred during email processing: {e}")
+        # In a real application, you'd want more robust error logging/notifications here.
+    finally:
+        if imap_server:
+            try:
+                imap_server.logout()
+                print("IMAP server logged out.")
+            except Exception as e:
+                print(f"Error during IMAP logout: {e}")
+
+if __name__ == "__main__":
+    process_emails()
